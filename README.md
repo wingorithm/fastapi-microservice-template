@@ -1,4 +1,4 @@
-#UNDER CONSTRUCTION (pls wait 🙏)
+# UNDER CONSTRUCTION (pls wait 🙏)
 1. uv pip install -r requirements.txt
 
 2. alembic revision --autogenerate -m "Create pokemons table" -> app/repository/migration/versions/xxxx_xxxx_table.py
