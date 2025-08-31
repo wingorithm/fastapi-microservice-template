@@ -1,0 +1,18 @@
+[project]
+name = "service-a"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "alembic>=1.16.5",
+    "asyncpg>=0.30.0",
+    "fastapi[standard]>=0.116.1",
+    "loguru>=0.7.3",
+    "psycopg2-binary>=2.9.10",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "python-decouple>=3.8",
+    "pytz>=2025.2",
+    "sqlalchemy==1.4.41",
+]

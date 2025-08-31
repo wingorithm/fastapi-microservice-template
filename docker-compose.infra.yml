@@ -1,0 +1,41 @@
+# Defines the core infrastructure services (database, service discovery).
+# This stack should be started before the main application stack.
+version: '3.8'
+
+services:
+  consul:
+    image: consul:1.15.4
+    container_name: consul
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: "agent -dev -client=0.0.0.0 -ui"
+    networks:
+      - microservices-net
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=psqladmin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  microservices-net:
+    driver: bridge
+    name: microservices-net
+
+volumes:
+  postgres_data:
