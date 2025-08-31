@@ -90,17 +90,6 @@ prod.env
 .env.test.local
 .env.production.local
 
-# Flutter
-*.class
-*.lock
-*.log
-*.pyc
-*.swp
-.atom/
-.buildlog/
-.history
-.svn/
-
 # Jupyter Notebook
 .ipynb_checkpoints
 
