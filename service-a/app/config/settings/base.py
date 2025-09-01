@@ -2,7 +2,6 @@ import logging
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class BackendBaseSettings(BaseSettings):
     TITLE: str = "Service A"
     VERSION: str = "1.0.0"
@@ -51,8 +50,9 @@ class BackendBaseSettings(BaseSettings):
     SERVICE_B_URL: str
     # ========================= Client/Proxy Configuration =====================
 
+    CONFIG_SOURCE: str = "N/A"
     model_config = SettingsConfigDict(
-        env_file='.env',
+        env_file='.env-local',
         extra="allow"
     )
 

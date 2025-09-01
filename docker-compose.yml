@@ -50,8 +50,13 @@ services:
     command: ["sleep", "infinity"]
     depends_on:
       - postgres
+    ports:
+      - "8081:8081"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/service_a_db
+      - SERVICE_NAME=service-a
+      - ENVIRONMENT=DEV
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
     networks:
       - microservices-net
 
@@ -61,13 +66,16 @@ services:
     command: ["sleep", "infinity"]
     depends_on:
       - postgres
+    ports:
+      - "8082:8082"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/service_b_db
+      - SERVICE_NAME=service-b
+      - ENVIRONMENT=DEV
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
     networks:
       - microservices-net
 
-# This tells Docker Compose that the network is created elsewhere
-# and this stack should join it, not create it.
 networks:
   microservices-net:
     external: true

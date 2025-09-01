@@ -4,7 +4,9 @@
 
 3. run the service `python main.py` -> table created
 
-apigateway : use KONG gateway own infrastructure not the KONG KONNECT
+feature
+- apigateway : use KONG gateway own infrastructure not the KONG KONNECT
+- consul kv : config/<service_name>/<key>
 
 Multi-Compose File Setup Guide
 This project is now structured using multiple docker-compose files to separate the core infrastructure from the application services. This is a best practice for managing different service lifecycles and environments.
