@@ -51,8 +51,9 @@ class BackendBaseSettings(BaseSettings):
     SERVICE_A_URL: str
     # ========================= Client/Proxy Configuration =====================
 
+    CONFIG_SOURCE: str = "N/A"
     model_config = SettingsConfigDict(
-        env_file='.env',
+        env_file='.env-local',
         extra="allow"
     )
 

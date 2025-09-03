@@ -36,6 +36,7 @@ dependencies = [
     "pydantic-core==2.33.2",
     "pydantic-settings==2.10.1",
     "pygments==2.19.2",
+    "python-consul2>=0.1.5",
     "python-decouple==3.8",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.20",
