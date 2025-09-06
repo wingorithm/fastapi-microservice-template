@@ -12,7 +12,7 @@ env:
 jobs:
   # Job for Service A
   build-and-push-service-a:
-    name: Build and Push service_a
+    name: Build and Push service-a
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,23 +35,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} #GitHub Actions auto gen token
 
-      - name: Extract Docker metadata for service_a
+      - name: Extract Docker metadata for service-a
         id: meta_a
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ steps.prep_a.outputs.IMAGE_NAME_LC }}/service_a
+          images: ${{ env.REGISTRY }}/${{ steps.prep_a.outputs.IMAGE_NAME_LC }}/service-a
 
-      - name: Build and push service_a Docker image
+      - name: Build and push service-a Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./service_a
+          context: ./service-a
           push: true
           tags: ${{ steps.meta_a.outputs.tags }}
           labels: ${{ steps.meta_a.outputs.labels }}
 
   # Job for Service B
   build-and-push-service-b:
-    name: Build and Push service_b
+    name: Build and Push service-b
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -74,17 +74,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} #GitHub Actions auto gen token
 
-      - name: Extract Docker metadata for service_b
+      - name: Extract Docker metadata for service-b
         id: meta_b
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ steps.prep_a.outputs.IMAGE_NAME_LC }}/service_b
+          images: ${{ env.REGISTRY }}/${{ steps.prep_b.outputs.IMAGE_NAME_LC }}/service-b
 
-      - name: Build and push service_b Docker image
+      - name: Build and push service-b Docker image
         uses: docker/build-push-action@v5
         with:
           # IMPORTANT: Set the context to the service's subdirectory
-          context: ./service_b
+          context: ./service-b
           push: true
           tags: ${{ steps.meta_b.outputs.tags }}
           labels: ${{ steps.meta_b.outputs.labels }}
