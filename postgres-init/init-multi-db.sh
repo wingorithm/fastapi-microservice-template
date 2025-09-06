@@ -9,6 +9,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     CREATE USER kong WITH PASSWORD 'kong';
     CREATE DATABASE kong;
     GRANT ALL PRIVILEGES ON DATABASE kong TO kong;
+
+    \c kong
+
+    GRANT CREATE, USAGE ON SCHEMA public TO kong;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO kong;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO kong;
 EOSQL
 
 # Create databases for service_a and service_b

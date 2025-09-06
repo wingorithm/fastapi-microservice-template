@@ -1,4 +1,4 @@
-# Defines the core infrastructure services (database, service discovery).
+# Defines the core infrastructure services (database, consul, and gateway).
 # This stack should be started before the main application stack.
 version: '3.8'
 
@@ -28,11 +28,54 @@ services:
       - "5432:5432"
     networks:
       - microservices-net
+    command: ["postgres", "-c", "log_statement=all"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  kong-bootstrap:
+    image: kong:latest
+    container_name: kong-bootstrap
+    command: "kong migrations bootstrap"
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=postgres
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+      - KONG_PG_DATABASE=kong
+    networks:
+      - microservices-net
+    depends_on:
+      - postgres
+    restart: on-failure
+
+  kong:
+    image: kong:latest
+    container_name: kong
+    depends_on:
+      - kong-bootstrap
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=postgres
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+      - KONG_PG_DATABASE=kong
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_PROXY_LISTEN=0.0.0.0:8000
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - KONG_GUI_LISTEN=0.0.0.0:8002
+      - KONG_ADMIN_GUI_URL=http://localhost:8002 #point it to your public IP address
+    ports:
+      - "8000:8000" # Proxy HTTP
+      - "8001:8001" # Admin API HTTP
+      - "8002:8002" # Kong Manager HTTP
+    networks:
+      - microservices-net
 
 networks:
   microservices-net:
