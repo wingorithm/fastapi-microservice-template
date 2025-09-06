@@ -1,0 +1,81 @@
+name: Build and Publish Docker Images
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # Job for Service A
+  build-and-push-service-a:
+    name: Build and Push service_a
+    # only run if changes are pushed to the service_a directory
+    if: github.repository != '' && (contains(toJson(github.event.commits), 'service_a/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata for service_a
+        id: meta_a
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ lower(github.repository) }}/service_a
+
+      - name: Build and push service_a Docker image
+        uses: docker/build-push-action@v5
+        with:
+          # IMPORTANT: Set the context to the service's subdirectory
+          context: ./service_a
+          push: true
+          tags: ${{ steps.meta_a.outputs.tags }}
+          labels: ${{ steps.meta_a.outputs.labels }}
+
+  # Job for Service B
+  build-and-push-service-b:
+    name: Build and Push service_b
+    # only run if changes are pushed to the service_b directory
+    if: github.repository != '' && (contains(toJson(github.event.commits), 'service_b/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata for service_b
+        id: meta_b
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ lower(github.repository) }}/service_b
+
+      - name: Build and push service_b Docker image
+        uses: docker/build-push-action@v5
+        with:
+          # IMPORTANT: Set the context to the service's subdirectory
+          context: ./service_b
+          push: true
+          tags: ${{ steps.meta_b.outputs.tags }}
+          labels: ${{ steps.meta_b.outputs.labels }}
