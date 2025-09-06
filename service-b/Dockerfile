@@ -17,7 +17,6 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
 # 3. Create an app directory and copy requirements
-WORKDIR /app
 COPY requirements.txt .
 
 # 4. Use uv to install dependencies into the system's Python site-packages
@@ -32,15 +31,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
 # 2. Copy the installed Python packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 # Also copy any executable scripts installed by packages (e.g., uvicorn)
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # 3. Copy the application code and expose the port app
-COPY app .
+COPY . .
 EXPOSE 8082
 
 # 4. Command to run the FastAPI app

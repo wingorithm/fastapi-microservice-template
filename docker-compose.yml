@@ -6,10 +6,6 @@ services:
   kong-migrations:
     image: kong:latest
     command: "kong migrations bootstrap"
-    depends_on:
-      # These services are expected to be running on the shared network
-      - postgres
-      - consul
     environment:
       - KONG_DATABASE=postgres
       - KONG_PG_HOST=postgres
@@ -23,15 +19,13 @@ services:
     image: kong:latest
     container_name: kong
     depends_on:
-      - postgres
       - kong-migrations
-      - consul
     environment:
       - KONG_DATABASE=postgres
       - KONG_PG_HOST=postgres
       - KONG_PG_USER=kong
       - KONG_PG_PASSWORD=kong
-      - KONG_DNS_RESOLVER=consul:8600
+      - KONG_DNS_RESOLVER=consul:8500
       - KONG_PROXY_ACCESS_LOG=/dev/stdout
       - KONG_ADMIN_ACCESS_LOG=/dev/stdout
       - KONG_PROXY_ERROR_LOG=/dev/stderr
@@ -44,12 +38,9 @@ services:
     networks:
       - microservices-net
 
-  service_a:
-    image: python:3.11-slim
-    container_name: service_a
-    command: ["sleep", "infinity"]
-    depends_on:
-      - postgres
+  service-a:
+    image: ghcr.io/wingorithm/fastapi-microservice-template/service-a:release-dev
+    container_name: service-a
     ports:
       - "8081:8081"
     environment:
@@ -60,12 +51,9 @@ services:
     networks:
       - microservices-net
 
-  service_b:
-    image: python:3.11-slim
-    container_name: service_b
-    command: ["sleep", "infinity"]
-    depends_on:
-      - postgres
+  service-b:
+    image: ghcr.io/wingorithm/fastapi-microservice-template/service-b:release-dev
+    container_name: service-b
     ports:
       - "8082:8082"
     environment:
