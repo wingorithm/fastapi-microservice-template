@@ -11,7 +11,6 @@ jobs:
   # Job for Service A
   build-and-push-service-a:
     name: Build and Push service_a
-    # only run if changes are pushed to the service_a directory
     if: github.repository != '' && (contains(toJson(github.event.commits), 'service_a/'))
     runs-on: ubuntu-latest
     permissions:
@@ -22,23 +21,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare image name
+        id: prep_a
+        run: |
+          IMAGE_NAME="${{ github.repository }}"
+          echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> $GITHUB_OUTPUT
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }} #GitHub Actions auto gen token
 
       - name: Extract Docker metadata for service_a
         id: meta_a
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ lower(github.repository) }}/service_a
+          images: ${{ env.REGISTRY }}/${{ steps.prep_a.outputs.IMAGE_NAME_LC }}/service_a
 
       - name: Build and push service_a Docker image
         uses: docker/build-push-action@v5
         with:
-          # IMPORTANT: Set the context to the service's subdirectory
           context: ./service_a
           push: true
           tags: ${{ steps.meta_a.outputs.tags }}
@@ -58,18 +62,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare image name
+        id: prep_b
+        run: |
+          IMAGE_NAME="${{ github.repository }}"
+          echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> $GITHUB_OUTPUT
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }} #GitHub Actions auto gen token
 
       - name: Extract Docker metadata for service_b
         id: meta_b
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ lower(github.repository) }}/service_b
+          images: ${{ env.REGISTRY }}/${{ steps.prep_a.outputs.IMAGE_NAME_LC }}/service_b
 
       - name: Build and push service_b Docker image
         uses: docker/build-push-action@v5
