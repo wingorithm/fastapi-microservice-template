@@ -1,5 +1,6 @@
 import sqlalchemy
 from loguru import logger
+from fastapi import HTTPException
 
 from app.model.db.Pokemon import Pokemon
 from app.model.schemas.PokemonDTO import PokemonDTO
@@ -13,6 +14,9 @@ class PokemonCRUDRepository(BaseCRUDRepository):
         stmt = sqlalchemy.select(Pokemon).where(Pokemon.id == pokemon_id)
         result = await self.async_session.execute(statement=stmt)
         poke = result.scalar()
+
+        if poke is None:
+            raise HTTPException(status_code=404, detail=f"Pokemon with id {pokemon_id} not found")
 
         logger.info(f"COMPLETE | Reading pokemon {pokemon_id} data in service A...")
         return PokemonDTO.from_orm(poke)
