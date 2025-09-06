@@ -2,7 +2,9 @@ name: Build and Publish Docker Images
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      #change accordingly to your need
+      - release/dev
 
 env:
   REGISTRY: ghcr.io
@@ -11,7 +13,6 @@ jobs:
   # Job for Service A
   build-and-push-service-a:
     name: Build and Push service_a
-    if: github.repository != '' && (contains(toJson(github.event.commits), 'service_a/'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -51,8 +52,6 @@ jobs:
   # Job for Service B
   build-and-push-service-b:
     name: Build and Push service_b
-    # only run if changes are pushed to the service_b directory
-    if: github.repository != '' && (contains(toJson(github.event.commits), 'service_b/'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
