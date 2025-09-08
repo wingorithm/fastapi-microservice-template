@@ -1,4 +1,7 @@
-# UNDER CONSTRUCTION (pls wait 🙏)
+# Fastapi Microservice Template
+
+<img width="1922" height="1004" alt="fastapi-microservice" src="https://github.com/user-attachments/assets/fd62300a-cd62-4b5c-bc9c-7f56c0a5cc74" />
+
 1. uv pip install -r requirements.txt
 
 2. alembic revision --autogenerate -m "Create pokemons table" -> app/repository/migration/versions/xxxx_xxxx_table.py
