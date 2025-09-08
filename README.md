@@ -1,6 +1,24 @@
-# Fastapi Microservice Template
+<h1 align=center><strong>Fastapi Microservice Template</strong></h1>
 
 <img width="1922" height="1004" alt="fastapi-microservice" src="https://github.com/user-attachments/assets/fd62300a-cd62-4b5c-bc9c-7f56c0a5cc74" />
+
+This is a template repository aimed to kick-start your microservice project with a setup from a real-world application! This template utilizes the following tech stack:
+
+## What's The Tech-Stack?
+//todo: tell all and responsibility
+* 🐳 [Dockerized](https://www.docker.com/)
+* 🐘 [Asynchronous PostgreSQL](https://www.postgresql.org/docs/current/libpq-async.html)
+* 🐍 [FastAPI Backend Boilerplate](https://fastapi.tiangolo.com/)
+* alembic auto migration
+* consul service registry
+* consul kv
+* kong gateway
+* kong bootstrap
+* registrator
+
+## What's The Boilerplate Structure?
+## What's The Scenario?
+## How to Setup?
 
 1. uv pip install -r requirements.txt
 
