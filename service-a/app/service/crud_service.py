@@ -3,11 +3,11 @@ from typing import Any, Coroutine
 
 from loguru import logger
 
-from app.model.schemas.GlobalResponse import GlobalResponse
-from app.model.schemas.PokemonDTO import PokemonDTO
-from app.model.schemas.PokemonTrainerDTO import PokemonTrainerDTO
-from app.repository.crud.PokemonRepository import PokemonCRUDRepository
-from app.repository.proxy.ServiceBProxy import ServiceBProxy
+from app.model.schemas.global_response import GlobalResponse
+from app.model.schemas.pokemon_dto import PokemonDTO
+from app.model.schemas.pokemon_trainer_dto import PokemonTrainerDTO
+from app.repository.crud.pokemon_repository import PokemonCRUDRepository
+from app.repository.proxy.service_b_proxy import ServiceBProxy
 
 
 class CrudService:

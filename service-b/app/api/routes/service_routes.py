@@ -5,8 +5,8 @@ from fastapi.params import Depends
 from loguru import logger
 
 from app.api.dependencies.service import get_crud_service
-from app.model.schemas.GlobalResponse import GlobalResponse, OutputSchema
-from app.service.CrudService import CrudService
+from app.model.schemas.global_response import GlobalResponse, OutputSchema
+from app.service.crud_service import CrudService
 
 router = APIRouter()
 
@@ -15,12 +15,12 @@ async def health_check():
     return {"status": "ok"}
 
 @router.get(
-    path="/service-a/get-data",
+    path="/service-b/get-data",
     response_model=GlobalResponse
 )
-async def get_product(service: CrudService = Depends(get_crud_service)) -> GlobalResponse:
+async def get_product(service: CrudService = Depends(get_crud_service))-> GlobalResponse:
     logger.info("Request get_product")
-    response = await service.get_random_pokemon()
+    response = await service.get_random_trainer()
 
     logger.info(f"Response get_product {response}")
     return GlobalResponse(
@@ -33,15 +33,15 @@ async def get_product(service: CrudService = Depends(get_crud_service)) -> Globa
     )
 
 @router.get(
-    path="/service-a/potential-pokemons/{trainer_id}",
+    path="/service-b/potential-trainer/{pokemon_id}",
     response_model=GlobalResponse
 )
 async def get_product(
-        trainer_id: int,
+        pokemon_id: int,
         service: CrudService = Depends(get_crud_service)
-) -> GlobalResponse:
+)-> GlobalResponse:
     logger.info("Request get_product")
-    response = await service.get_pokemon(trainer_id)
+    response = await service.get_trainer(pokemon_id)
 
     logger.info(f"Response get_product {response}")
     return GlobalResponse(

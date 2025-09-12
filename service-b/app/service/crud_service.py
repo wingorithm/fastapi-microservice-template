@@ -2,11 +2,11 @@ import random
 
 from loguru import logger
 
-from app.model.schemas.GlobalResponse import GlobalResponse
-from app.model.schemas.PokemonTrainerDTO import PokemonTrainerDTO
-from app.model.schemas.TrainerDTO import TrainerDTO
-from app.repository.crud.TrainerRepository import TrainerCRUDRepository
-from app.repository.proxy.ServiceAProxy import ServiceAProxy
+from app.model.schemas.global_response import GlobalResponse
+from app.model.schemas.pokemon_trainer_dto import PokemonTrainerDTO
+from app.model.schemas.trainer_dto import TrainerDTO
+from app.repository.crud.trainer_repository import TrainerCRUDRepository
+from app.repository.proxy.service_a_proxy import ServiceAProxy
 
 
 class CrudService:

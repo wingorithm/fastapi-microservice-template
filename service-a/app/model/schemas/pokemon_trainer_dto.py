@@ -1,7 +1,7 @@
 from typing import List
 
 from app.model.schemas.base import BaseSchemaModel
-from app.model.schemas.PokemonDTO import PokemonDTO
+from app.model.schemas.pokemon_dto import PokemonDTO
 
 class TrainerDTO(BaseSchemaModel):
     id: int

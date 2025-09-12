@@ -1,6 +1,6 @@
 import fastapi
 
-from app.api.routes.ServiceRoutes import router as service_router
+from app.api.routes.service_routes import router as service_router
 
 router = fastapi.APIRouter()
 

@@ -1,5 +1,5 @@
 from loguru import logger
-from app.model.schemas.GlobalResponse import GlobalResponse
+from app.model.schemas.global_response import GlobalResponse
 from app.repository.proxy.base import BaseProxy
 
 
