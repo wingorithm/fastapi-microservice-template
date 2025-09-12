@@ -1,52 +1,124 @@
-# UNDER CONSTRUCTION (pls wait 🙏)
+<h1 align=center><strong>Fastapi Microservice Template</strong></h1>
+
+A production-ready template to jumpstart your microservice projects using FastAPI. This repository provides a structured foundation inspired by real-world applications, so you can focus on building features instead of boilerplate.
+> ⚠️ This template is not a drop-in production deployment, but it’s built on production-grade principles (modular architecture, service discovery, API gateway, centralized config). It gives you a strong foundation to scale toward production.
+
+<img width="1922" height="1004" alt="fastapi-microservice" src="https://github.com/user-attachments/assets/fd62300a-cd62-4b5c-bc9c-7f56c0a5cc74" />
+
+## What's The Tech-Stack?
+* 🐳 [Dockerized](https://www.docker.com/)
+* 🐘 [Asynchronous PostgreSQL](https://www.postgresql.org/docs/current/libpq-async.html)
+* 🐍 [FastAPI Backend Boilerplate](https://fastapi.tiangolo.com/)
+* 💾 [Alembic Auto Migration](https://github.com/sqlalchemy/alembic)
+* ☎️ [Consul Service Registry](https://www.hashicorp.com/en/products/consul)
+* 📑 [Consul KV](https://www.hashicorp.com/en/products/consul)
+* 👮 [Kong Gateway](https://konghq.com/products/kong-gateway)
+* 🪪 [Registrator](https://hub.docker.com/r/hypolas/registrator)
+* 🗂️ [UV package manager](https://docs.astral.sh/uv/)
+
+## What's The Boilerplate Structure?
+```shell
+.github/
+├── workflows/
+    ├── docker-publish.yml              # A CI file for the backend app that connected to github container registry
+service-a/
+├── app/
+    ├── api/
+        ├── dependencies/               # Dependency injections folder
+        ├── routes/                     # Endpoints
+            ├── service_routes.py       # Service's routes / controller
+        ├── endpoints.py                # Endpoint registration
+    ├── config/
+        ├── settings/
+            ├── base.py                 # Base settings / settings parent class
+                ├── development.py      # dev env settings
+                ├── environments.py     # Enum with PROD, DEV, STAGE environment
+                ├── production.py       # prod env settings
+                ├── staging.py          # uat env settings
+        ├── events.py                   # Registration of global events
+        ├── manager.py                  # Manage config properties fetch to consul kv or local .env
+    ├── model/
+        ├── db/
+            ├── account.py               # Pokemon class for database entity
+        ├── schemas/
+            ├── global_response.py       # Standardized global api response wrapper to promote consitency
+            ├── pokemon_dto.py           # Pokemon Data Transfer Object classes for data encapsulation and validation
+            ├── base.py                  # Base class with pydantic for data validation objects
+    ├── repository/
+        ├── crud/
+            ├── pokemon_repository.py   # Repository class for C. R. U. D. operations for Pokemon entity
+            ├── base.py                 # Base class for C. R. U. D. operations
+        ├── migrations/
+            ├── versions/               # Generated migration scripts for tracking database schema changes history,
+            ├── env.py                  # Generated via alembic for automigration (adjusted for specific schema)
+            ├── script.py.mako          # Generated via alembic
+        ├── proxy/
+            ├── service_b_proxy.py      # Proxy class (client) to call other remote services via consul service discovery
+            ├── base.py                 # Base class for proxy / client communication
+        ├── base.py                     # Entry point for alembic automigration
+        ├── database.py                 # Database class with engine and session
+        ├── events.py                   # Registration of database events
+        ├── table.py                    # Custom SQLAlchemy Base class
+    ├── api/
+        ├── crud_service.py             # Service layer for storing all business logic
+    ├── utilities/                      # Folders to store your util class and logic
+        ├── datetime_formatter.py
+├── .env-example                        # Our bootstrap properties in local development (rename this to '.env') 
+├── .env-local                          # Our application properties based on environtment (fell free to add .env-staging, prod, etc) 
+├── Dockerfile                          # Docker configuration file for backend service
+├── README.md                           # Documentation for backend app
+├── alembic.ini                         # Automatic database migration configuration (adjusted for specific schema)
+├── main.py                             # Our main backend server app
+├── pyproject.toml                      # Our source of truth for project metadata, dependencies, and build system
+├── requirements.txt                    # Packages installed and list of dependency for backend app
+├── uv.lock                             # lockfile generated by uv
+```
+
+## What's The Scenario?
+you'll have 2 client entry endpoint
+
+### 1st journey pokemon to trainer
+client will ask our system to find random pokemon data follows by the possible trainer for it 
+-> hit {gateway_url}/pokemons/get-data -> hit service-a -> hit service-b -> return to client  
+//todo: gambar
+
+![1st journey pokemon to trainer](https://github.com/user-attachments/assets/7840747a-933e-4ea2-bfa3-3645bd7633dd)
+
+### 2nd journey trainer to pokemon
+client will ask our system to find random trainer data follows by the possible pokemon to tame
+client -> hit {gateway_url}/trainers/get-data -> hit service-b -> hit service-a -> return to client  
+//todo: gambar
+
+![2nd journey trainer to pokemon](https://github.com/user-attachments/assets/9ea6c7bf-ed16-4cd3-becd-87084908f007)
+
+
+## How to Setup?
+This project is now structured using multiple docker-compose files to separate the core infrastructure from the application services. This is the practice for managing different service lifecycles and environments.
+```shell
+├── docker-compose.yml           # Application services (service_a, service_b, etc.)
+├── docker-compose.infra.yml     # Infrastructure (PostgreSQL, Consul, Registrator, Kong)
+└── postgres-init/
+    └── init-multi-db.sh         # bootstrap file for Postgre
+```
+
+### 1. start the infrastructure stack
+```shell
+docker-compose -f docker-compose.infra.yml up -d
+```
+you need to ensure some postgres, consul, kong, etc. to become healthy. otherwise try to restart specific container. special case for the kong-bootstrap it is expected to stop running after database bootstraping finish.
+
+### 2. check bootstrap result
+
+### 3. Start the Application Services
+```shell
+docker-compose -f docker-compose.yml up -d
+```
+
+
 1. uv pip install -r requirements.txt
 
 2. alembic revision --autogenerate -m "Create pokemons table" -> app/repository/migration/versions/xxxx_xxxx_table.py
 
 3. run the service `python main.py` -> table created
 
-feature
-- apigateway : use KONG gateway own infrastructure not the KONG KONNECT
-- consul kv : config/<service_name>/<key>
 
-Multi-Compose File Setup Guide
-This project is now structured using multiple docker-compose files to separate the core infrastructure from the application services. This is a best practice for managing different service lifecycles and environments.
-
-File Structure
-.
-├── docker-compose.yml           # Application services (Kong, service_a, etc.)
-├── docker-compose.infra.yml     # Infrastructure (PostgreSQL, Consul)
-└── postgres-init/
-    └── init-multi-db.sh
-
-How It Works
-docker-compose.infra.yml: This file defines and creates the "slow-moving" parts of your stack: the database (postgres) and service discovery (consul). It is also responsible for creating the shared network (microservices-net) and the data volume (postgres_data).
-
-docker-compose.yml: This file defines your applications. It declares the microservices-net network as external: true. This is a critical instruction that tells Docker Compose, "Don't create this network; just connect my services to the one that already exists."
-
-This separation allows you to tear down and restart your application services without affecting your running database.
-
-How to Run
-You must start the infrastructure stack first, as the application stack depends on the network it creates.
-
-Start the Infrastructure:
-Open your terminal and run:
-
-docker-compose -f docker-compose.infra.yml up -d
-
-Wait for the services (especially postgres) to become healthy.
-
-Start the Application Services:
-In the same terminal, run:
-
-docker-compose -f docker-compose.yml up -d
-
-Starting Everything at Once
-You can also start both stacks with a single command by passing multiple -f flags. The order matters; Docker Compose processes them sequentially.
-
-docker-compose -f docker-compose.infra.yml -f docker-compose.yml up -d
-
-How to Stop
-To stop everything, you can run the same command with down:
-
-docker-compose -f docker-compose.infra.yml -f docker-compose.yml down
