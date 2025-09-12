@@ -1,4 +1,4 @@
-# Defines the core infrastructure services (database, service discovery).
+# Defines the core infrastructure services (database, consul, and gateway).
 # This stack should be started before the main application stack.
 version: '3.8'
 
@@ -9,9 +9,23 @@ services:
     ports:
       - "8500:8500"
       - "8600:8600/udp"
+      - "8600:8600/tcp"
     volumes:
       - consul_data:/consul/data
-    command: "agent -server -bootstrap-expect=1 -client=0.0.0.0 -ui"
+    command: "agent -server -bootstrap-expect=1 -client=0.0.0.0 -ui -bind=0.0.0.0 -dns-port=8600"
+    networks:
+      microservices-net:
+        # we give consul static ip since kong dns resolver only accept ipv4/6
+        ipv4_address: 172.20.0.100
+
+  registrator:
+    image: hypolas/registrator:latest
+    container_name: registrator
+    depends_on:
+      - consul
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    command: -internal -cleanup -resync 10 consul://consul:8500
     networks:
       - microservices-net
 
@@ -27,17 +41,70 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - microservices-net
+      microservices-net:
+        # we give consul static ip for kong
+        ipv4_address: 172.20.0.101
+    command: ["postgres", "-c", "log_statement=all"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  kong-bootstrap:
+    image: kong:latest
+    container_name: kong-bootstrap
+    command: "kong migrations bootstrap"
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=postgres
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+      - KONG_PG_DATABASE=kong
+    networks:
+      - microservices-net
+    depends_on:
+      - postgres
+    restart: on-failure
+
+  kong:
+    image: kong:latest
+    container_name: kong
+    depends_on:
+      - kong-bootstrap
+      - consul
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=172.20.0.101
+      - KONG_PG_PORT=5432
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+      - KONG_PG_DATABASE=kong
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_PROXY_LISTEN=0.0.0.0:8000
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - KONG_GUI_LISTEN=0.0.0.0:8002
+      - KONG_ADMIN_GUI_URL=http://localhost:8002 #point it to your public IP address
+      # --- KONG-CONSUL INTEGRATION ---
+      - KONG_DNS_RESOLVER=172.20.0.100:8600
+      - KONG_DNS_ORDER=LAST,SRV,A,CNAME
+    ports:
+      - "8000:8000" # Proxy HTTP
+      - "8001:8001" # Admin API HTTP
+      - "8002:8002" # Kong Manager HTTP
+    networks:
+      - microservices-net
+
 networks:
   microservices-net:
     driver: bridge
     name: microservices-net
+    ipam:
+      config:
+          - subnet: 172.20.0.0/16
 
 volumes:
   postgres_data:

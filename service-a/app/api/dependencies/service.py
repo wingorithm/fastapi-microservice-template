@@ -2,9 +2,9 @@ from fastapi.params import Depends
 
 from app.api.dependencies.repository import get_repository
 from app.config.manager import settings
-from app.repository.crud.PokemonRepository import PokemonCRUDRepository
-from app.repository.proxy.ServiceBProxy import ServiceBProxy
-from app.service.CrudService import CrudService
+from app.repository.crud.pokemon_repository import PokemonCRUDRepository
+from app.repository.proxy.service_b_proxy import ServiceBProxy
+from app.service.crud_service import CrudService
 
 """
 This file act as Factory function to create service dependencies.

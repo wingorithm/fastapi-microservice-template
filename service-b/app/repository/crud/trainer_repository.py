@@ -1,8 +1,8 @@
 import sqlalchemy
 from loguru import logger
 from fastapi import HTTPException
-from app.model.db.Trainer import Trainer
-from app.model.schemas.TrainerDTO import TrainerDTO
+from app.model.db.trainer import Trainer
+from app.model.schemas.trainer_dto import TrainerDTO
 from app.repository.crud.base import BaseCRUDRepository
 
 

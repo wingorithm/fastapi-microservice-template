@@ -3,48 +3,14 @@
 version: '3.8'
 
 services:
-  kong-migrations:
-    image: kong:latest
-    command: "kong migrations bootstrap"
-    environment:
-      - KONG_DATABASE=postgres
-      - KONG_PG_HOST=postgres
-      - KONG_PG_USER=kong
-      - KONG_PG_PASSWORD=kong
-    networks:
-      - microservices-net
-    restart: on-failure
-
-  kong:
-    image: kong:latest
-    container_name: kong
-    depends_on:
-      - kong-migrations
-    environment:
-      - KONG_DATABASE=postgres
-      - KONG_PG_HOST=postgres
-      - KONG_PG_USER=kong
-      - KONG_PG_PASSWORD=kong
-      - KONG_DNS_RESOLVER=consul:8500
-      - KONG_PROXY_ACCESS_LOG=/dev/stdout
-      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
-      - KONG_PROXY_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_LISTEN=0.0.0.0:8001
-    ports:
-      - "8000:8000"
-      - "8443:8443"
-      - "8001:8001"
-    networks:
-      - microservices-net
-
   service-a:
     image: ghcr.io/wingorithm/fastapi-microservice-template/service-a:release-dev
-    container_name: service-a
-    ports:
-      - "8081:8081"
+#    add when you need to debug through open api docs (CAUTION! keep this commented for scaling)
+#    ports:
+#      - "8081:8081"
     environment:
       - SERVICE_NAME=service-a
+      - SERVICE_TAGS=fastapi,v1.0
       - ENVIRONMENT=DEV
       - CONSUL_HOST=consul
       - CONSUL_PORT=8500
@@ -53,11 +19,12 @@ services:
 
   service-b:
     image: ghcr.io/wingorithm/fastapi-microservice-template/service-b:release-dev
-    container_name: service-b
-    ports:
-      - "8082:8082"
+#    add when you need to debug through open api docs (CAUTION! keep this commented for scaling)
+#    ports:
+#      - "8082:8082"
     environment:
       - SERVICE_NAME=service-b
+      - SERVICE_TAGS=fastapi,v1.0
       - ENVIRONMENT=DEV
       - CONSUL_HOST=consul
       - CONSUL_PORT=8500
@@ -67,4 +34,3 @@ services:
 networks:
   microservices-net:
     external: true
-

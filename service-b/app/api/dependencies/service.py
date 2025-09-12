@@ -2,9 +2,9 @@ from fastapi.params import Depends
 
 from app.api.dependencies.repository import get_repository
 from app.config.manager import settings
-from app.repository.crud.TrainerRepository import TrainerCRUDRepository
-from app.repository.proxy.ServiceAProxy import ServiceAProxy
-from app.service.CrudService import CrudService
+from app.repository.crud.trainer_repository import TrainerCRUDRepository
+from app.repository.proxy.service_a_proxy import ServiceAProxy
+from app.service.crud_service import CrudService
 
 """
 This file act as Factory function to create service dependencies.

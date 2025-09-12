@@ -2,8 +2,8 @@ import sqlalchemy
 from loguru import logger
 from fastapi import HTTPException
 
-from app.model.db.Pokemon import Pokemon
-from app.model.schemas.PokemonDTO import PokemonDTO
+from app.model.db.pokemon import Pokemon
+from app.model.schemas.pokemon_dto import PokemonDTO
 from app.repository.crud.base import BaseCRUDRepository
 
 
