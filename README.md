@@ -138,16 +138,16 @@ The `postgres-init` script automatically creates the necessary databases and sch
 
 ### 3. Setup & Inspect Consul Service Registry
 Consul provides a UI to inspect the service mesh and manage configuration.
-> using UI is not weak, it not just easier, but help us reduce human error 😎
+> using UI is not weak, it's not just easier, but help us reduce human error 😎
 
 1. Verify Service Registration:
-Open the Consul UI at `http://localhost:8500` Navigate to the Services tab. You should see `service-a` and `service-b` listed as healthy.
+Open the Consul UI at `http://localhost:8500` Navigate to the Services tab. You should see `kong` and `postgres` listed as healthy (after step _4. Start the Application Services_ `service_a` and `service_b` will catch up).
 <p align="center">
 <img src="https://github.com/user-attachments/assets/fbb27c7c-1ce9-4531-b7a6-3047721341b2" alt="Consul Services UI" width="700"/>
 </p>
 
 2. Set Up Centralized Configuration:
-Use the Key/Value tab to store centralized configuration that your serv will use, get the config in `.env-local`.
+Use the Key/Value tab to store centralized configuration that your service will use, get the config in `.env-local`.
 <p align="center">
 <img src="https://github.com/user-attachments/assets/1108ce91-7836-49e1-8a03-860b8f75cae0" alt="Consul Key/Value UI" width="700"/>
 </p>
@@ -167,12 +167,14 @@ On startup, each service automatically runs its database migrations using `Alemb
 ### 5. Finale; Setup Your Gateway (Kong)
 Finally, expose the services to the outside world by configuring routes in Kong. You can use the Kong Admin UI, available at `http://localhost:8001`.
 1. Create an upstream service for `service-a`:
+
    A Kong Service points to a specific backend. Configure it to use Consul for service discovery.
     - Name: `pokemon-service`
     - Protocol: `http`
     - Host: `service-a.service.consul` (This special address lets Kong find `service-a` via Consul)
     - Port: `80`
 2. Create an upstream service for `service-b`:
+
    Do the same for the trainer service.
     - Name: `trainer-service`
     - Protocol: `http`
@@ -180,11 +182,13 @@ Finally, expose the services to the outside world by configuring routes in Kong.
     - Port: `80`
     <p align="center"><img src="https://github.com/user-attachments/assets/32c5cd0c-b118-4404-a9e0-4a120a48389d" alt="Kong Services List" width="900"/></p>
 3. Create a route for `pokemon-service`:
+
    A Route defines how requests are sent to a Service. Create a route that forwards requests with the `/pokemons` path to the `pokemon-service`.
     - Name: `pokemon-service-route`
     - Service: Select `pokemon-service`
     - Path: `/pokemons`
-4. Create a route for `trainer-service`:
+5. Create a route for `trainer-service`:
+
    Similarly, create a route that forwards requests with the `/trainers` path to the `trainer-service`.
     - Name: `trainer-service-route`
     - Service: Select `trainer-service`
@@ -214,7 +218,7 @@ When you need to add, update, or remove a Python package, follow this process.
     - Update requirements.txt:
      To ensure the requirements.txt file stays in sync for compatibility with other tools, regenerate it from the lock file.
     ```shell
-    uv pip freeze > requirements.txt
+    uv export --no-hashes > requirements.txt
     ```
 2. Changing the Database Schema, 
 This project uses Alembic to manage database migrations. The process is semi-automated.
