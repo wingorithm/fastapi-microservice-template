@@ -145,94 +145,92 @@ Open the Consul UI at `http://localhost:8500` Navigate to the Services tab. You 
 <p align="center">
 <img src="https://github.com/user-attachments/assets/fbb27c7c-1ce9-4531-b7a6-3047721341b2" alt="Consul Services UI" width="700"/>
 </p>
+
 2. Set Up Centralized Configuration:
-Use the Key/Value tab to store centralized configuration that your services will use, get the config in `.env-local`.
+Use the Key/Value tab to store centralized configuration that your serv will use, get the config in `.env-local`.
 <p align="center">
 <img src="https://github.com/user-attachments/assets/1108ce91-7836-49e1-8a03-860b8f75cae0" alt="Consul Key/Value UI" width="700"/>
 </p>
 
-### 3. Start the Application Services
+### 4. Start the Application Services
+With the infrastructure running, start the service-a and service-b applications.
 ```shell
 docker-compose -f docker-compose.yml up -d
 ```
-when every time service is starting... it will try to migrate the migrations using `alembic`. So table that we devine in code base will also created in the database.
-before you can fully use the app endpoint, insert application's data in `postgres-init\example-data.sql`
-> (ℹ️) DO NOT change version data in `*/app/repository/migration/versions/*.py`, if you need to change the migration follow instruction at section 'How To Modify The Code?'
 
+On startup, each service automatically runs its database migrations using `Alembic`, creating the tables defined in the codebase.
 
+> ⚠️ Important: To populate the database with sample data required for the endpoints to work, manually execute the SQL commands in `postgres-init/example-data.sql`
 
-### 5. Finale; Setup Your Gateway
-same like consul, our Kong gateway also provide intuitive web admin UI 
-first create your services, add service-a to kong i setup like below
-```json
-{
-  "name": "pokemon-service",
-  "tags": null,
-  "protocol": "http",
-  "host": "service-a.service.consul",
-  "path": "/service-a/",
-  "port": 80
-}
-```
-do the same to service-b
-```json
-{
-  "name": "trainer-service",
-  "tags": null,
-  "protocol": "http",
-  "host": "service-b.service.consul",
-  "path": "/service-b/",
-  "port": 80
-}
-```
+> ℹ️ DO NOT change version data in `*/app/repository/migration/versions/*.py`, if you need to change the migration follow instruction at section 'How To Modify The Code?'
 
-after above configuration you'll get something like below:
-![WhatsApp Image 2025-09-06 at 23 54 27_7a1b7cf9](https://github.com/user-attachments/assets/32c5cd0c-b118-4404-a9e0-4a120a48389d)
+### 5. Finale; Setup Your Gateway (Kong)
+Finally, expose the services to the outside world by configuring routes in Kong. You can use the Kong Admin UI, available at `http://localhost:8001`.
+1. Create an upstream service for `service-a`:
+   A Kong Service points to a specific backend. Configure it to use Consul for service discovery.
+    - Name: `pokemon-service`
+    - Protocol: `http`
+    - Host: `service-a.service.consul` (This special address lets Kong find `service-a` via Consul)
+    - Port: `80`
+2. Create an upstream service for `service-b`:
+   Do the same for the trainer service.
+    - Name: `trainer-service`
+    - Protocol: `http`
+    - Host: `service-b.service.consul`
+    - Port: `80`
+    <p align="center"><img src="https://github.com/user-attachments/assets/32c5cd0c-b118-4404-a9e0-4a120a48389d" alt="Kong Services List" width="900"/></p>
+3. Create a route for `pokemon-service`:
+   A Route defines how requests are sent to a Service. Create a route that forwards requests with the `/pokemons` path to the `pokemon-service`.
+    - Name: `pokemon-service-route`
+    - Service: Select `pokemon-service`
+    - Path: `/pokemons`
+4. Create a route for `trainer-service`:
+   Similarly, create a route that forwards requests with the `/trainers` path to the `trainer-service`.
+    - Name: `trainer-service-route`
+    - Service: Select `trainer-service`
+    - Path: `/trainers`
+    <p align="center"><img src="https://github.com/user-attachments/assets/e8758bf3-5218-4713-9e15-93c9d8ae0612" alt="Kong Routes List" width="900"/></p>
+    
+Your setup is now complete! Happy coding 🐞 You can begin making requests to the API Gateway (e.g., `http://localhost:8000/pokemons/get-data`).
 
+## How To Modify The Service?
+This guide outlines the development workflow for modifying a backend service, such as adding a new feature that requires dependency changes or database schema updates.
 
-Next setup your route, i make every request with `/pokemons` is redirected to `service-a` aka `pokemon-service`
-```json
-{
-  "name": "pokemon-service-route",
-  "service": {
-    "id": "13202838-f1b8-43f0-b541-8a15acaac2d5"
-  },
-  "tags": [],
-  "protocols": [
-    "http"
-  ],
-  "paths": [
-    "/pokemons"
-  ]
-}
+### Prerequisites
+Before you begin, ensure you are working inside the specific service's directory (e.g., service-a/) and have activated the virtual environment.
+```shell
+cd service-a/
+source .venv/bin/activate
+uv sync
 ```
 
-do the same to service be every request with `/trainers` is redirected to `service-b` aka `trainer-service`
-```json
-{
-  "name": "trainer-service-route",
-  "service": {
-    "id": "69b874d5-0b86-4292-8b81-563d64df37a4"
-  },
-  "tags": [],
-  "protocols": [
-    "http"
-  ],
-  "paths": [
-    "/trainers"
-  ]
-}
-```
-
-after above configuration you'll get something like below:
-![WhatsApp Image 2025-09-06 at 23 54 26_ee4e3ff5](https://github.com/user-attachments/assets/e8758bf3-5218-4713-9e15-93c9d8ae0612)
-
-
-## How To Modify The Code?
-0. ensure you have uv package manager installed
-1. go to root project `python-fastapi-microservice/service-a/`, activate venv, sync and install all required dependency form uv.lock `uv sync`, we are using uv in this project, but keep the requirements.txt on track by exporting it
-
-2. `alembic revision --autogenerate -m "Create pokemons table"` will generate app/repository/migration/versions/xxxx_xxxx_table.py. so use it when you modify or create new table. after versions file is generated, then just start the service again, the automigration will start migrating your changes
-
-3.  run the service `python main.py`
-
+1. Managing Dependencies, 
+When you need to add, update, or remove a Python package, follow this process.
+    - Install a New Package:
+    Use `uv` to add a new package. It will automatically update the `pyproject.toml` and `uv.lock` files.
+    ```shell
+    uv add "package-name"
+    ```
+    - Update requirements.txt:
+     To ensure the requirements.txt file stays in sync for compatibility with other tools, regenerate it from the lock file.
+    ```shell
+    uv pip freeze > requirements.txt
+    ```
+2. Changing the Database Schema, 
+This project uses Alembic to manage database migrations. The process is semi-automated.
+    - Modify Your SQLAlchemy Models:
+      First, make the desired changes directly in your Python code. For example, add a new column to a model in `app/models.py` or    create an entirely new model file.
+    - Generate a Migration Script:
+      Once your models are updated, run Alembic's autogenerate command. This will compare your SQLAlchemy models against the current state of the database and create a new migration script.
+      ```Shell
+      example
+      alembic revision --autogenerate -m "Add description column to Pokemon model"
+      ```
+    This creates a new file inside `app/repository/migration/versions/.` You should review this file to ensure it accurately reflects your intended changes.
+    > ℹ️ This template is configured to handle database upgrades automatically by simply run the application.
+ 
+3. Running the Service
+    ```
+    python main.py
+    ```
+    Firstly the service will detect and apply any pending Alembic migrations on startup before the application begins serving requests, then your database schema is now up-to-date with your models, and the service is running with your latest code changes.
