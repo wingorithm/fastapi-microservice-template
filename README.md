@@ -128,9 +128,13 @@ when every time service is starting... it will try to migrate the migrations usi
 before you can fully use the app endpoint, insert application's data in `postgres-init\example-data.sql`
 > (ℹ️) DO NOT change version data in `*/app/repository/migration/versions/*.py`, if you need to change the migration follow instruction at section 'How To Modify The Code?'
 
-### 4. Inspect Consul Service Registry
+### 4. Setup & Inspect Consul Service Registry
 consul provide web UI to interact with Consul, enter the web UI go to `http://localhost:8500/`. Then on tab /services you may see something like below
-> (ℹ️) using UI is not weak, it not just easier, but help us reduce human error 😎
+> using UI is not weak, it not just easier, but help us reduce human error 😎
+![WhatsApp Image 2025-09-07 at 18 21 59_b03df09b](https://github.com/user-attachments/assets/fbb27c7c-1ce9-4531-b7a6-3047721341b2)
+
+don't forget to setup app config in consul kv - centralize configuration, you may also do it via UI
+![WhatsApp Image 2025-09-12 at 11 54 40_dada0a7e](https://github.com/user-attachments/assets/1108ce91-7836-49e1-8a03-860b8f75cae0)
 
 
 ### 5. Finale; Setup Your Gateway
@@ -159,7 +163,8 @@ do the same to service-b
 ```
 
 after above configuration you'll get something like below:
-//TODO: images
+![WhatsApp Image 2025-09-06 at 23 54 27_7a1b7cf9](https://github.com/user-attachments/assets/32c5cd0c-b118-4404-a9e0-4a120a48389d)
+
 
 Next setup your route, i make every request with `/pokemons` is redirected to `service-a` aka `pokemon-service`
 ```json
@@ -196,7 +201,8 @@ do the same to service be every request with `/trainers` is redirected to `servi
 ```
 
 after above configuration you'll get something like below:
-//TODO: images
+![WhatsApp Image 2025-09-06 at 23 54 26_ee4e3ff5](https://github.com/user-attachments/assets/e8758bf3-5218-4713-9e15-93c9d8ae0612)
+
 
 ## How To Modify The Code?
 1. uv pip install -r requirements.txt
