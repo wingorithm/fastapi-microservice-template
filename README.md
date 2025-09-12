@@ -105,16 +105,100 @@ This project is now structured using multiple docker-compose files to separate t
 ```shell
 docker-compose -f docker-compose.infra.yml up -d
 ```
-you need to ensure some postgres, consul, kong, etc. to become healthy. otherwise try to restart specific container. special case for the kong-bootstrap it is expected to stop running after database bootstraping finish.
+ensure postgres, consul, kong, etc. to become healthy. otherwise try to restart specific container that still unhealthy.
+> (ℹ️) special case for the kong-bootstrap it is expected to stop running after database bootstrapping finish.
 
 ### 2. check bootstrap result
+there are some bootstrapping that are going to make
+1. postgres db and schema, ensure this following db and schema are exist
+```text
+├── kong
+    └── public
+        └── 35 tables
+├── microservice
+    └──service_a
+    └──service_b
+```
 
 ### 3. Start the Application Services
 ```shell
 docker-compose -f docker-compose.yml up -d
 ```
+when every time service is starting... it will try to migrate the migrations using `alembic`. So table that we devine in code base will also created in the database.
+before you can fully use the app endpoint, insert application's data in `postgres-init\example-data.sql`
+> (ℹ️) DO NOT change version data in `*/app/repository/migration/versions/*.py`, if you need to change the migration follow instruction at section 'How To Modify The Code?'
+
+### 4. Inspect Consul Service Registry
+consul provide web UI to interact with Consul, enter the web UI go to `http://localhost:8500/`. Then on tab /services you may see something like below
+> (ℹ️) using UI is not weak, it not just easier, but help us reduce human error 😎
 
 
+### 5. Finale; Setup Your Gateway
+same like consul, our Kong gateway also provide intuitive web admin UI 
+first create your services, add service-a to kong i setup like below
+```json
+{
+  "name": "pokemon-service",
+  "tags": null,
+  "protocol": "http",
+  "host": "service-a.service.consul",
+  "path": "/service-a/",
+  "port": 80
+}
+```
+do the same to service-b
+```json
+{
+  "name": "trainer-service",
+  "tags": null,
+  "protocol": "http",
+  "host": "service-b.service.consul",
+  "path": "/service-b/",
+  "port": 80
+}
+```
+
+after above configuration you'll get something like below:
+//TODO: images
+
+Next setup your route, i make every request with `/pokemons` is redirected to `service-a` aka `pokemon-service`
+```json
+{
+  "name": "pokemon-service-route",
+  "service": {
+    "id": "13202838-f1b8-43f0-b541-8a15acaac2d5"
+  },
+  "tags": [],
+  "protocols": [
+    "http"
+  ],
+  "paths": [
+    "/pokemons"
+  ]
+}
+```
+
+do the same to service be every request with `/trainers` is redirected to `service-b` aka `trainer-service`
+```json
+{
+  "name": "trainer-service-route",
+  "service": {
+    "id": "69b874d5-0b86-4292-8b81-563d64df37a4"
+  },
+  "tags": [],
+  "protocols": [
+    "http"
+  ],
+  "paths": [
+    "/trainers"
+  ]
+}
+```
+
+after above configuration you'll get something like below:
+//TODO: images
+
+## How To Modify The Code?
 1. uv pip install -r requirements.txt
 
 2. alembic revision --autogenerate -m "Create pokemons table" -> app/repository/migration/versions/xxxx_xxxx_table.py
