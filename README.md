@@ -1,6 +1,6 @@
 <h1 align=center><strong>Fastapi Microservice Template</strong></h1>
 
-A production-ready template to jumpstart your microservice projects using FastAPI. This repository provides a structured foundation inspired by real-world applications, so you can focus on building features instead of boilerplate.
+A template to jumpstart your microservice projects using FastAPI. This repository provides a structured foundation inspired by real-world applications, so you can focus on building features instead of boilerplate.
 > ⚠️ This template is not a drop-in production deployment, but it’s built on production-grade principles (modular architecture, service discovery, API gateway, centralized config). It gives you a strong foundation to scale toward production.
 
 <img width="1922" height="1004" alt="fastapi-microservice" src="https://github.com/user-attachments/assets/fd62300a-cd62-4b5c-bc9c-7f56c0a5cc74" />
@@ -75,21 +75,37 @@ service-a/
 ```
 
 ## What's The Scenario?
-you'll have 2 client entry endpoint
+we'll have two primary interaction flows, orchestrated through an API Gateway.
 
-### 1st journey pokemon to trainer
-client will ask our system to find random pokemon data follows by the possible trainer for it 
--> hit {gateway_url}/pokemons/get-data -> hit service-a -> hit service-b -> return to client  
-//todo: gambar
+### 1st Scenario : Find a Trainer for a Pokémon
+``` shell
+Client -> GET {gateway_url}/pokemons/get-data -> Service-A -> Service-B -> Client
+```
+Workflow:
+1. A client sends a GET request to `/pokemons/get-data` endpoint on the API Gateway.
+2. The gateway routes the request to `service-a` (the Pokémon Service).
+3. `service-a` fetches data for a random Pokémon.
+4. `service-a` then calls `service-b` (the Trainer Service) to find a trainer who would be a good match for the selected Pokémon.
+5. The combined Pokémon and Trainer data is aggregated and returned to the client. The response will look like below example
 
-![1st journey pokemon to trainer](https://github.com/user-attachments/assets/7840747a-933e-4ea2-bfa3-3645bd7633dd)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/7840747a-933e-4ea2-bfa3-3645bd7633dd" alt="1st journey pokemon to trainer" width="400"/>
+</p>
 
-### 2nd journey trainer to pokemon
-client will ask our system to find random trainer data follows by the possible pokemon to tame
-client -> hit {gateway_url}/trainers/get-data -> hit service-b -> hit service-a -> return to client  
-//todo: gambar
+### 2nd Scenario: Find a Pokémon for a Trainer
+``` shell
+Client -> GET {gateway_url}/trainers/get-data -> Service-B -> Service-A -> Client
+```
+Workflow:
+1. A client sends a GET request to `/trainers/get-data` endpoint on the API Gateway.
+2. The gateway routes the request to `service-b` (the Trainer Service).
+3. `service-b` fetches data for a random trainer.
+4. `service-b` then calls `service-a` (the Pokémon Service) to find a Pokémon that fits the trainer's profile or specialty.
+5. The combined Trainer and Pokémon data is aggregated and returned to the client. The response will look like below example
 
-![2nd journey trainer to pokemon](https://github.com/user-attachments/assets/9ea6c7bf-ed16-4cd3-becd-87084908f007)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9ea6c7bf-ed16-4cd3-becd-87084908f007" alt="2nd journey trainer to pokemon" width="400"/>
+</p>
 
 
 ## How to Setup?
@@ -98,27 +114,42 @@ This project is now structured using multiple docker-compose files to separate t
 ├── docker-compose.yml           # Application services (service_a, service_b, etc.)
 ├── docker-compose.infra.yml     # Infrastructure (PostgreSQL, Consul, Registrator, Kong)
 └── postgres-init/
-    └── init-multi-db.sh         # bootstrap file for Postgre
+    └── init-multi-db.sh         # bootstrap file for Postgres
 ```
 
-### 1. start the infrastructure stack
+### 1. Start the Infrastructure Stack
+First, launch the infrastructure services like the database, service discovery, and API gateway.
 ```shell
 docker-compose -f docker-compose.infra.yml up -d
 ```
-ensure postgres, consul, kong, etc. to become healthy. otherwise try to restart specific container that still unhealthy.
-> (ℹ️) special case for the kong-bootstrap it is expected to stop running after database bootstrapping finish.
+After that check all containers, ensure their healthiness.
+> ℹ️ Note: The `kong-bootstrap` container is expected to run once to set up the database and then exit. Seeing it with a status of `Exited (0)` is normal.
 
-### 2. check bootstrap result
-there are some bootstrapping that are going to make
-1. postgres db and schema, ensure this following db and schema are exist
-```text
+### 2. Verify Database Initialization
+The `postgres-init` script automatically creates the necessary databases and schemas. Connect to your PostgreSQL instance and verify that the following structure exists:
+```plaintext
 ├── kong
     └── public
-        └── 35 tables
+        └── 35 Kong's internal tables)
 ├── microservice
     └──service_a
     └──service_b
 ```
+
+### 3. Setup & Inspect Consul Service Registry
+Consul provides a UI to inspect the service mesh and manage configuration.
+> using UI is not weak, it not just easier, but help us reduce human error 😎
+
+1. Verify Service Registration:
+Open the Consul UI at `http://localhost:8500` Navigate to the Services tab. You should see `service-a` and `service-b` listed as healthy.
+<p align="center">
+<img src="https://github.com/user-attachments/assets/fbb27c7c-1ce9-4531-b7a6-3047721341b2" alt="Consul Services UI" width="700"/>
+</p>
+2. Set Up Centralized Configuration:
+Use the Key/Value tab to store centralized configuration that your services will use, get the config in `.env-local`.
+<p align="center">
+<img src="https://github.com/user-attachments/assets/1108ce91-7836-49e1-8a03-860b8f75cae0" alt="Consul Key/Value UI" width="700"/>
+</p>
 
 ### 3. Start the Application Services
 ```shell
@@ -128,13 +159,6 @@ when every time service is starting... it will try to migrate the migrations usi
 before you can fully use the app endpoint, insert application's data in `postgres-init\example-data.sql`
 > (ℹ️) DO NOT change version data in `*/app/repository/migration/versions/*.py`, if you need to change the migration follow instruction at section 'How To Modify The Code?'
 
-### 4. Setup & Inspect Consul Service Registry
-consul provide web UI to interact with Consul, enter the web UI go to `http://localhost:8500/`. Then on tab /services you may see something like below
-> using UI is not weak, it not just easier, but help us reduce human error 😎
-![WhatsApp Image 2025-09-07 at 18 21 59_b03df09b](https://github.com/user-attachments/assets/fbb27c7c-1ce9-4531-b7a6-3047721341b2)
-
-don't forget to setup app config in consul kv - centralize configuration, you may also do it via UI
-![WhatsApp Image 2025-09-12 at 11 54 40_dada0a7e](https://github.com/user-attachments/assets/1108ce91-7836-49e1-8a03-860b8f75cae0)
 
 
 ### 5. Finale; Setup Your Gateway
@@ -205,10 +229,10 @@ after above configuration you'll get something like below:
 
 
 ## How To Modify The Code?
-1. uv pip install -r requirements.txt
+0. ensure you have uv package manager installed
+1. go to root project `python-fastapi-microservice/service-a/`, activate venv, sync and install all required dependency form uv.lock `uv sync`, we are using uv in this project, but keep the requirements.txt on track by exporting it
 
-2. alembic revision --autogenerate -m "Create pokemons table" -> app/repository/migration/versions/xxxx_xxxx_table.py
+2. `alembic revision --autogenerate -m "Create pokemons table"` will generate app/repository/migration/versions/xxxx_xxxx_table.py. so use it when you modify or create new table. after versions file is generated, then just start the service again, the automigration will start migrating your changes
 
-3. run the service `python main.py` -> table created
-
+3.  run the service `python main.py`
 
