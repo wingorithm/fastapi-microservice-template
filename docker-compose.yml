@@ -16,6 +16,8 @@ services:
       - CONSUL_PORT=8500
     networks:
       - microservices-net
+    dns:
+      - 172.20.0.100
 
   service-b:
     image: ghcr.io/wingorithm/fastapi-microservice-template/service-b:release-dev
@@ -30,6 +32,8 @@ services:
       - CONSUL_PORT=8500
     networks:
       - microservices-net
+    dns:
+      - 172.20.0.100
 
 networks:
   microservices-net:
